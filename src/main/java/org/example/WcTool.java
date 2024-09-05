@@ -13,16 +13,31 @@ public class WcTool implements Callable<Integer> {
     @CommandLine.Option(names={"-c", "--count"}, description = "Count bytes in the file")
     private boolean countBytes;
 
+    @CommandLine.Option(names={"--l", "--line"}, description = "Count lines in the file")
+    private boolean countLines;
+
     @CommandLine.Parameters(index="0", description = "The file whose lines, words and characters are to be counted.")
     private String filePath;
 
     @Override
     public Integer call() throws Exception {
+        StringBuilder outputBuilder = new StringBuilder();
+        var path = Paths.get(filePath);
         if (countBytes) {
-            var path = Paths.get(filePath);
             var bytes = Files.readAllBytes(path);
-            System.out.println(bytes.length + " " + path.getFileName().toString());
+            outputBuilder.append("\t");
+            outputBuilder.append(bytes.length);
         }
+
+        if (countLines) {
+            var lines = Files.readAllLines(path);
+            outputBuilder.append("\t");
+            outputBuilder.append(lines.size());
+        }
+
+        outputBuilder.append("\t");
+        outputBuilder.append(path.getFileName().toString());
+        System.out.println(outputBuilder.toString());
 
         return 0;
     }
