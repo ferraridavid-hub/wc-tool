@@ -13,8 +13,11 @@ public class WcTool implements Callable<Integer> {
     @CommandLine.Option(names={"-c", "--count"}, description = "Count bytes in the file")
     private boolean countBytes;
 
-    @CommandLine.Option(names={"--l", "--line"}, description = "Count lines in the file")
+    @CommandLine.Option(names={"-l", "--line"}, description = "Count lines in the file")
     private boolean countLines;
+
+    @CommandLine.Option(names={"-w", "--word"}, description = "Count words in the file")
+    private boolean countWords;
 
     @CommandLine.Parameters(index="0", description = "The file whose lines, words and characters are to be counted.")
     private String filePath;
@@ -33,6 +36,18 @@ public class WcTool implements Callable<Integer> {
             var lines = Files.readAllLines(path);
             outputBuilder.append("\t");
             outputBuilder.append(lines.size());
+        }
+
+        if (countWords) {
+            var lines = Files.readAllLines(path);
+            var words = 0;
+            for (var line : lines) {
+                if (!line.trim().isEmpty()) {
+                    words += line.trim().split("\\s+").length;
+                }
+            }
+            outputBuilder.append("\t");
+            outputBuilder.append(words);
         }
 
         outputBuilder.append("\t");
