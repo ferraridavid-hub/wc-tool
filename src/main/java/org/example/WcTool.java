@@ -30,6 +30,11 @@ public class WcTool implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+
+        if(!countChars && !countLines && !countWords && !countBytes) {
+            countBytes = countLines = countWords = true;
+        }
+
         StringBuilder outputBuilder = new StringBuilder();
         var path = Paths.get(filePath);
         if (countBytes) {
