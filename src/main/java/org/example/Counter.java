@@ -25,6 +25,7 @@ public class Counter {
             if (!line.trim().isEmpty()) {
                 wordsCount += line.trim().split("\\s+").length;
             }
+            // The readline() method drops the \n characters.
             bytesCount += line.getBytes().length + 1;
             charsCount += line.codePointCount(0, line.length()) + 1;
         }

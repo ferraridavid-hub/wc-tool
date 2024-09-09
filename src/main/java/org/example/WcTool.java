@@ -2,9 +2,6 @@ package org.example;
 
 import picocli.CommandLine;
 
-import javax.xml.stream.events.Characters;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,14 +26,14 @@ public class WcTool implements Callable<Integer> {
     @CommandLine.Parameters(index = "0", description = "The file whose lines, words and characters are to be counted.", arity = "0..1")
     private String filePath = null;
 
+    private final StringBuilder outputBuilder = new StringBuilder();
+
     @Override
     public Integer call() throws Exception {
 
         if (!countChars && !countLines && !countWords && !countBytes) {
             countBytes = countLines = countWords = true;
         }
-
-        StringBuilder outputBuilder = new StringBuilder();
 
         Counter counter;
         Path path = null;
@@ -48,35 +45,37 @@ public class WcTool implements Callable<Integer> {
         }
 
         if (countBytes) {
-            var bytes = counter.getBytesCount();
-            outputBuilder.append("\t");
-            outputBuilder.append(bytes);
+            addItemToOutput(counter.getBytesCount());
         }
 
         if (countLines) {
-            var lines = counter.getLinesCount();
-            outputBuilder.append("\t");
-            outputBuilder.append(lines);
+            addItemToOutput(counter.getLinesCount());
         }
 
         if (countWords) {
-            var words = counter.getWordsCount();
-            outputBuilder.append("\t");
-            outputBuilder.append(words);
+            addItemToOutput(counter.getWordsCount());
         }
 
         if (countChars) {
-            var chars = counter.getCharsCount();
-            outputBuilder.append("\t");
-            outputBuilder.append(chars);
+            addItemToOutput(counter.getCharsCount());
         }
 
-        outputBuilder.append("\t");
         if (path != null) {
-            outputBuilder.append(path.getFileName().toString());
+            addItemToOutput(path.getFileName().toString());
         }
+
         System.out.println(outputBuilder);
 
         return 0;
+    }
+
+    private void addItemToOutput(int item) {
+        outputBuilder.append("\t");
+        outputBuilder.append(item);
+    }
+
+    private void addItemToOutput(String item) {
+        outputBuilder.append("\t");
+        outputBuilder.append(item);
     }
 }
