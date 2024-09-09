@@ -6,6 +6,7 @@ import javax.xml.stream.events.Characters;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
@@ -25,65 +26,57 @@ public class WcTool implements Callable<Integer> {
     @CommandLine.Option(names = {"-m", "--chars"}, description = "Count characters in the file")
     private boolean countChars;
 
-    @CommandLine.Parameters(index = "0", description = "The file whose lines, words and characters are to be counted.")
-    private String filePath;
+    @CommandLine.Parameters(index = "0", description = "The file whose lines, words and characters are to be counted.", arity = "0..1")
+    private String filePath = null;
 
     @Override
     public Integer call() throws Exception {
 
-        if(!countChars && !countLines && !countWords && !countBytes) {
+        if (!countChars && !countLines && !countWords && !countBytes) {
             countBytes = countLines = countWords = true;
         }
 
         StringBuilder outputBuilder = new StringBuilder();
-        var path = Paths.get(filePath);
+
+        Counter counter;
+        Path path = null;
+        if (filePath == null) {
+            counter = new Counter(System.in);
+        } else {
+            path = Paths.get(filePath);
+            counter = new Counter(Files.newInputStream(path));
+        }
+
         if (countBytes) {
-            var bytes = Files.readAllBytes(path);
+            var bytes = counter.getBytesCount();
             outputBuilder.append("\t");
-            outputBuilder.append(bytes.length);
+            outputBuilder.append(bytes);
         }
 
         if (countLines) {
-            var lines = Files.readAllLines(path);
+            var lines = counter.getLinesCount();
             outputBuilder.append("\t");
-            outputBuilder.append(lines.size());
+            outputBuilder.append(lines);
         }
 
         if (countWords) {
-            var lines = Files.readAllLines(path);
-            var words = 0;
-            for (var line : lines) {
-                if (!line.trim().isEmpty()) {
-                    words += line.trim().split("\\s+").length;
-                }
-            }
+            var words = counter.getWordsCount();
             outputBuilder.append("\t");
             outputBuilder.append(words);
         }
 
         if (countChars) {
-            int chars = 0;
-            try (
-                    BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(path));
-                    InputStreamReader isr = new InputStreamReader(bis, StandardCharsets.UTF_8);
-                    BufferedReader br = new BufferedReader(isr)
-            ) {
-                int codeUnit;
-                while ((codeUnit = br.read()) != -1) {
-                    chars++;
-                }
-            }
+            var chars = counter.getCharsCount();
+            outputBuilder.append("\t");
+            outputBuilder.append(chars);
+        }
 
         outputBuilder.append("\t");
-        outputBuilder.append(chars);
-    }
-
-        outputBuilder.append("\t");
-        outputBuilder.append(path.getFileName().
-
-    toString());
-        System.out.println(outputBuilder.toString());
+        if (path != null) {
+            outputBuilder.append(path.getFileName().toString());
+        }
+        System.out.println(outputBuilder);
 
         return 0;
-}
+    }
 }
